@@ -31,6 +31,7 @@ import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import java.io.File
 import coil.compose.rememberImagePainter
+import android.util.Log
 
 @Composable
 fun ImageUploadScreen() {
@@ -48,7 +49,9 @@ fun ImageUploadScreen() {
             var isLoading by remember { mutableStateOf(false) }
             var error by remember { mutableStateOf<String?>(null) }
             var uploadedImageUrl by remember { mutableStateOf<String?>(null) }
+            var labels by remember { mutableStateOf<List<String>>(emptyList()) }
 
+            val TAG = "ImageUploadScreen"
 
             // Image selection launcher
             val launcher =
@@ -68,6 +71,7 @@ fun ImageUploadScreen() {
                                         resource.compress(Bitmap.CompressFormat.JPEG, 100, out)
                                     }
                                     imageFile.value = file
+                                    Log.d(TAG, "Image file created: ${file.path}")
                                 }
 
                                 override fun onLoadCleared(placeholder: Drawable?) {
@@ -90,26 +94,31 @@ fun ImageUploadScreen() {
                     modifier = Modifier.size(200.dp))
             }
 
-
             // Upload button
             Button(onClick = {
                 imageFile.value?.let { file ->
                     isLoading = true
                     error = null
 
-                    ApiService.uploadImage(file) { response ->
+                    Log.d(TAG, "Uploading image: ${file.path}")
+
+                    ApiService.uploadImage(file) { detectedImgPath, detectedLabels ->
                         isLoading = false
-                        response?.let { responseData ->
-                            // Update the uploadedImageUrl state
-                            uploadedImageUrl = responseData
-                        } ?: run {
+                        if (detectedImgPath != null && detectedLabels != null) {
+                            uploadedImageUrl = detectedImgPath
+                            labels = detectedLabels
+                            Log.d(TAG, "Image uploaded successfully: $uploadedImageUrl")
+                            Log.d(TAG, "Detected labels: $labels")
+                        } else {
                             error = "Failed to upload image"
+                            Log.e(TAG, error!!)
                         }
                     }
                 }
             }) {
                 Text("Upload Image")
             }
+
             // Loading state
             if (isLoading) {
                 CircularProgressIndicator()
@@ -123,20 +132,21 @@ fun ImageUploadScreen() {
             // Display uploaded image
             uploadedImageUrl?.let { url ->
                 Image(
-                    painter = rememberImagePainter(url),  // Move here
+                    painter = rememberImagePainter(url),
                     contentDescription = "Uploaded Image",
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
                 )
             }
+
+            // Display detected labels
+            if (labels.isNotEmpty()) {
+                Text(text = "Detected Labels:", color = Color.Black)
+                labels.forEach { label ->
+                    Text(text = label, color = Color.Black)
+                }
+            }
         }
     }
 }
-
-// Function to load and display the predicted image
-@Composable
-fun loadImage(imageUrl: String): Painter {
-    return rememberImagePainter(imageUrl)
-}
-
