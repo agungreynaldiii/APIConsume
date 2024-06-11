@@ -3,10 +3,17 @@ package com.example.apiconsume
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.Drawable
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -21,17 +28,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import coil.compose.rememberAsyncImagePainter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import java.io.File
-import coil.compose.rememberImagePainter
-import android.util.Log
 
 @Composable
 fun ImageUploadScreen() {
@@ -45,7 +50,7 @@ fun ImageUploadScreen() {
         ) {
             val context = LocalContext.current
             val imageFile = remember { mutableStateOf<File?>(null) }
-            var uploadedImage by remember { mutableStateOf<Painter?>(null) }
+//            var uploadedImage by remember { mutableStateOf<Painter?>(null) }
             var isLoading by remember { mutableStateOf(false) }
             var error by remember { mutableStateOf<String?>(null) }
             var uploadedImageUrl by remember { mutableStateOf<String?>(null) }
@@ -132,7 +137,7 @@ fun ImageUploadScreen() {
             // Display uploaded image
             uploadedImageUrl?.let { url ->
                 Image(
-                    painter = rememberImagePainter(url),
+                    painter = rememberAsyncImagePainter(url),
                     contentDescription = "Uploaded Image",
                     modifier = Modifier
                         .fillMaxWidth()
